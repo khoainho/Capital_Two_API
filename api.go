@@ -44,6 +44,8 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
 
+	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccount))
+
 	log.Println("Capital Two API server running on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
@@ -63,9 +65,13 @@ func (s *APIServer) handleAccount (w http.ResponseWriter, r *http.Request) error
 	return fmt.Errorf("method not allowed %s", r.Method)
 }
 
+
 func (s *APIServer) handleGetAccount (w http.ResponseWriter, r *http.Request) error {
-	account := NewAccount("Khoa", "Nguyen")
-	return WriteJson(w, http.StatusOK, account)
+	id := mux.Vars(r)["id"]
+
+	fmt.Println(id)
+	
+	return WriteJson(w, http.StatusOK, &Account{})
 }
 
 func (s *APIServer) handleCreateAccount (w http.ResponseWriter, r *http.Request) error {
