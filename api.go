@@ -60,11 +60,12 @@ func (s *APIServer) handleAccount (w http.ResponseWriter, r *http.Request) error
 		return s.handleDeleteAccount(w, r)
 	}
 
-	return fmt.Errorf("Method not allowed %s", r.Method)
+	return fmt.Errorf("method not allowed %s", r.Method)
 }
 
 func (s *APIServer) handleGetAccount (w http.ResponseWriter, r *http.Request) error {
-	return nil
+	account := NewAccount("Khoa", "Nguyen")
+	return WriteJson(w, http.StatusOK, account)
 }
 
 func (s *APIServer) handleCreateAccount (w http.ResponseWriter, r *http.Request) error {
