@@ -1,2 +1,2 @@
-# Capital_Two_API
+# Capital Two API
 Capital Two Go API 
