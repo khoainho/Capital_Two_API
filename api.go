@@ -1,12 +1,43 @@
 package main
 
 import (
+	"path/filepath"
+	"os"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
 )
+
+// serve single page application
+type spaHandler struct {
+	staticPath string
+	indexPath string
+}
+
+func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path, err := filepath.Abs(r.URL.Path)
+	if err != nil {
+		// failed to get absolute path
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
+	path = filepath.Join(h.staticPath, path)
+	
+	// check if file exists at path
+	_, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		http.ServeFile(w,r,filepath.Join(h.staticPath, h.indexPath))
+		return
+	} else if err != nil {
+		// return 500 error
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w,r)
+}
 
 func WriteJson(w http.ResponseWriter, status int, v any) error {
 	w.Header().Add("Content-Type", "application/json")
@@ -47,10 +78,14 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccountByID))
 
+	spa := spaHandler{staticPath: "frontend", indexPath: "index.html"}
+	router.PathPrefix("/").Handler(spa)
+
 	log.Println("Capital Two API server running on port: ", s.listenAddr)
 
-	http.ListenAndServe(s.listenAddr, router)
+	log.Fatal(http.ListenAndServe(s.listenAddr, router))
 }
+
 
 func (s *APIServer) handleAccount (w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
