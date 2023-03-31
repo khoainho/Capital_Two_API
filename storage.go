@@ -42,10 +42,10 @@ func (s *PostgresStore) Init() error {
 func (s *PostgresStore) CreateAccounttable() error {
 	query := `create table if not exists account (
 		id serial primary key,
-		first_name varchar(50),
-		last_name varchar(50),
+		first_name varchar(50) NOT NULL,
+		last_name varchar(50) NOT NULL,
 		acct_number serial,
-		current_balance serial,
+		current_balance money,
 		created_at timestamp
 	)`
 
